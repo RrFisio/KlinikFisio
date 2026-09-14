@@ -8,90 +8,90 @@
 </head>
 <body>
 
-<div class="topbar">
-  <div class="brand">Klinik Fisioterapi</div>
-  <nav>
-    <a href="dashboard.html">Daftar Pasien</a>
-    <a href="#" id="btn-logout">Keluar</a>
-  </nav>
-</div>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar-root"></aside>
 
-<div class="page wide">
-  <a href="dashboard.html" class="btn secondary" style="margin-bottom:20px;display:inline-block;">&larr; Kembali</a>
+  <main class="main-content">
+    <div class="content-wrap wide">
+      <a href="dashboard.html" class="btn secondary" style="margin-bottom:20px;display:inline-block;">&larr; Kembali ke Daftar Pasien</a>
 
-  <div class="card" id="kartu-identitas">
-    <div class="patient-header">
-      <div>
-        <h1 id="p-nama">Memuat...</h1>
-        <span class="empty" id="p-nomor"></span>
-      </div>
-    </div>
-    <dl class="patient-meta">
-      <div><dt>Tanggal Lahir</dt><dd id="p-tgl-lahir">-</dd></div>
-      <div><dt>Alamat</dt><dd id="p-alamat">-</dd></div>
-      <div style="grid-column: 1 / -1;"><dt>Keluhan</dt><dd id="p-keluhan">-</dd></div>
-    </dl>
-  </div>
-
-  <br>
-
-  <div class="columns">
-
-    <!-- JADWAL FISIOTERAPI -->
-    <div class="card">
-      <h2>Jadwal Fisioterapi</h2>
-      <ul class="timeline" id="list-jadwal">
-        <li class="empty">Memuat...</li>
-      </ul>
-
-      <div class="small-form">
-        <strong>Tambah Jadwal</strong>
-        <form id="form-jadwal">
-          <label for="j-tanggal">Tanggal</label>
-          <input type="date" id="j-tanggal" required>
-          <label for="j-jam">Jam</label>
-          <input type="time" id="j-jam" required>
-          <label for="j-tindakan">Jenis Tindakan</label>
-          <input type="text" id="j-tindakan" placeholder="Contoh: terapi latihan lutut">
-          <div class="actions">
-            <button type="submit">Simpan Jadwal</button>
+      <div class="card" id="kartu-identitas">
+        <div class="patient-header">
+          <div>
+            <h1 id="p-nama">Memuat...</h1>
+            <span class="empty" id="p-nomor"></span>
           </div>
-          <div id="notice-jadwal"></div>
-        </form>
+        </div>
+        <dl class="patient-meta">
+          <div><dt>Tanggal Lahir</dt><dd id="p-tgl-lahir">-</dd></div>
+          <div><dt>Nomor HP</dt><dd id="p-hp">-</dd></div>
+          <div><dt>Alamat</dt><dd id="p-alamat">-</dd></div>
+          <div style="grid-column: 1 / -1;"><dt>Keluhan</dt><dd id="p-keluhan">-</dd></div>
+        </dl>
       </div>
-    </div>
 
-    <!-- RIWAYAT TINDAKAN -->
-    <div class="card">
-      <h2>Riwayat Tindakan</h2>
-      <ul class="timeline" id="list-riwayat">
-        <li class="empty">Memuat...</li>
-      </ul>
+      <br>
 
-      <div class="small-form">
-        <strong>Catat Tindakan</strong>
-        <form id="form-riwayat">
-          <label for="r-tanggal">Tanggal</label>
-          <input type="date" id="r-tanggal" required>
-          <label for="r-tindakan">Tindakan</label>
-          <input type="text" id="r-tindakan" required placeholder="Contoh: mobilisasi sendi bahu">
-          <label for="r-terapis">Terapis</label>
-          <input type="text" id="r-terapis" placeholder="Nama terapis">
-          <label for="r-catatan">Catatan</label>
-          <textarea id="r-catatan" placeholder="Perkembangan, respons pasien, dsb."></textarea>
-          <div class="actions">
-            <button type="submit">Simpan Riwayat</button>
+      <div class="columns">
+
+        <!-- JADWAL FISIOTERAPI -->
+        <div class="card">
+          <h2>Jadwal Fisioterapi</h2>
+          <ul class="timeline" id="list-jadwal">
+            <li class="empty">Memuat...</li>
+          </ul>
+
+          <div class="small-form">
+            <strong>Tambah Jadwal</strong>
+            <form id="form-jadwal">
+              <label for="j-tanggal">Tanggal</label>
+              <input type="date" id="j-tanggal" required>
+              <label for="j-jam">Jam</label>
+              <input type="time" id="j-jam" required>
+              <label for="j-tindakan">Jenis Tindakan</label>
+              <input type="text" id="j-tindakan" placeholder="Contoh: terapi latihan lutut">
+              <div class="actions">
+                <button type="submit">Simpan Jadwal</button>
+              </div>
+              <div id="notice-jadwal"></div>
+            </form>
           </div>
-          <div id="notice-riwayat"></div>
-        </form>
+        </div>
+
+        <!-- RIWAYAT TINDAKAN -->
+        <div class="card">
+          <h2>Riwayat Tindakan</h2>
+          <ul class="timeline" id="list-riwayat">
+            <li class="empty">Memuat...</li>
+          </ul>
+
+          <div class="small-form">
+            <strong>Catat Tindakan</strong>
+            <form id="form-riwayat">
+              <label for="r-tanggal">Tanggal</label>
+              <input type="date" id="r-tanggal" required>
+              <label for="r-tindakan">Tindakan</label>
+              <input type="text" id="r-tindakan" required placeholder="Contoh: mobilisasi sendi bahu">
+              <label for="r-terapis">Terapis</label>
+              <input type="text" id="r-terapis" placeholder="Nama terapis">
+              <label for="r-catatan">Catatan</label>
+              <textarea id="r-catatan" placeholder="Perkembangan, respons pasien, dsb."></textarea>
+              <div class="actions">
+                <button type="submit">Simpan Riwayat</button>
+              </div>
+              <div id="notice-riwayat"></div>
+            </form>
+          </div>
+        </div>
+
       </div>
     </div>
-
-  </div>
+  </main>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/supabase-config.js"></script>
+<script src="assets/sidebar.js"></script>
 <script>
 const params = new URLSearchParams(window.location.search);
 const pasienId = params.get('id');
@@ -113,15 +113,6 @@ function formatJam(t) {
   return t.slice(0, 5);
 }
 
-async function cekLogin() {
-  const { data } = await supabaseClient.auth.getSession();
-  if (!data.session) {
-    window.location.href = 'login.html';
-    return false;
-  }
-  return true;
-}
-
 async function muatIdentitas() {
   const { data, error } = await supabaseClient
     .from('pasien')
@@ -137,6 +128,7 @@ async function muatIdentitas() {
   document.getElementById('p-nama').textContent = data.nama;
   document.getElementById('p-nomor').textContent = 'ID: ' + data.id.slice(0, 8).toUpperCase();
   document.getElementById('p-tgl-lahir').textContent = formatTanggal(data.tanggal_lahir);
+  document.getElementById('p-hp').textContent = data.nomor_hp || '-';
   document.getElementById('p-alamat').textContent = data.alamat;
   document.getElementById('p-keluhan').textContent = data.keluhan;
 }
@@ -228,19 +220,14 @@ document.getElementById('form-riwayat').addEventListener('submit', async (e) => 
   muatRiwayat();
 });
 
-document.getElementById('btn-logout').addEventListener('click', async (e) => {
-  e.preventDefault();
-  await supabaseClient.auth.signOut();
-  window.location.href = 'login.html';
-});
-
 (async () => {
   if (!pasienId) {
     document.getElementById('p-nama').textContent = 'ID pasien tidak ada di URL';
     return;
   }
-  const ok = await cekLogin();
+  const ok = await wajibLogin();
   if (!ok) return;
+  renderSidebar('pasien');
   muatIdentitas();
   muatJadwal();
   muatRiwayat();

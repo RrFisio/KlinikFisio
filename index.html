@@ -30,6 +30,9 @@
       <label for="alamat">Alamat Pasien</label>
       <textarea id="alamat" required placeholder="Alamat lengkap"></textarea>
 
+      <label for="nomor_hp">Nomor HP</label>
+      <input type="tel" id="nomor_hp" required placeholder="Contoh: 081234567890">
+
       <label for="keluhan">Keluhan</label>
       <textarea id="keluhan" required placeholder="Contoh: nyeri punggung bawah sejak 2 minggu"></textarea>
 
@@ -56,6 +59,7 @@ form.addEventListener('submit', async (e) => {
     nama: document.getElementById('nama').value.trim(),
     tanggal_lahir: document.getElementById('tanggal_lahir').value,
     alamat: document.getElementById('alamat').value.trim(),
+    nomor_hp: document.getElementById('nomor_hp').value.trim(),
     keluhan: document.getElementById('keluhan').value.trim(),
   };
 

@@ -3,56 +3,48 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard — Klinik Fisioterapi</title>
+<title>Daftar Pasien — Klinik Fisioterapi</title>
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
 
-<div class="topbar">
-  <div class="brand">Klinik Fisioterapi</div>
-  <nav>
-    <a href="#" id="btn-logout">Keluar</a>
-  </nav>
-</div>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar-root"></aside>
 
-<div class="page wide">
-  <h1>Daftar Pasien</h1>
-  <p class="lede">Klik nama pasien untuk membuka kartu pasien: identitas, riwayat tindakan, dan jadwal fisioterapi.</p>
+  <main class="main-content">
+    <div class="content-wrap wide">
+      <h1>Daftar Pasien</h1>
+      <p class="lede">Klik nama pasien untuk membuka kartu pasien: identitas, riwayat tindakan, dan jadwal fisioterapi.</p>
 
-  <div class="searchbar">
-    <input type="text" id="search" placeholder="Cari nama pasien...">
-  </div>
+      <div class="searchbar">
+        <input type="text" id="search" placeholder="Cari nama pasien...">
+      </div>
 
-  <div class="card">
-    <table id="tabel-pasien">
-      <thead>
-        <tr>
-          <th>Nama</th>
-          <th>Tanggal Lahir</th>
-          <th>Keluhan</th>
-          <th>Terdaftar</th>
-        </tr>
-      </thead>
-      <tbody id="tbody-pasien">
-        <tr><td colspan="4" class="empty">Memuat data...</td></tr>
-      </tbody>
-    </table>
-  </div>
+      <div class="card">
+        <table id="tabel-pasien">
+          <thead>
+            <tr>
+              <th>Nama</th>
+              <th>Tanggal Lahir</th>
+              <th>Nomor HP</th>
+              <th>Keluhan</th>
+              <th>Terdaftar</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-pasien">
+            <tr><td colspan="5" class="empty">Memuat data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/supabase-config.js"></script>
+<script src="assets/sidebar.js"></script>
 <script>
 let semuaPasien = [];
-
-async function cekLogin() {
-  const { data } = await supabaseClient.auth.getSession();
-  if (!data.session) {
-    window.location.href = 'login.html';
-    return false;
-  }
-  return true;
-}
 
 function formatTanggal(iso) {
   if (!iso) return '-';
@@ -60,26 +52,27 @@ function formatTanggal(iso) {
   return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str ?? '';
+  return div.innerHTML;
+}
+
 function renderTabel(list) {
   const tbody = document.getElementById('tbody-pasien');
   if (list.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="4" class="empty">Belum ada pasien terdaftar.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">Belum ada pasien terdaftar.</td></tr>';
     return;
   }
   tbody.innerHTML = list.map(p => `
     <tr>
       <td><a href="kartu.html?id=${p.id}">${escapeHtml(p.nama)}</a></td>
       <td>${formatTanggal(p.tanggal_lahir)}</td>
-      <td>${escapeHtml(p.keluhan).slice(0, 60)}${p.keluhan.length > 60 ? '…' : ''}</td>
+      <td>${escapeHtml(p.nomor_hp || '-')}</td>
+      <td>${escapeHtml(p.keluhan).slice(0, 50)}${p.keluhan.length > 50 ? '…' : ''}</td>
       <td>${formatTanggal(p.created_at)}</td>
     </tr>
   `).join('');
-}
-
-function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str ?? '';
-  return div.innerHTML;
 }
 
 async function muatPasien() {
@@ -90,7 +83,7 @@ async function muatPasien() {
 
   if (error) {
     document.getElementById('tbody-pasien').innerHTML =
-      `<tr><td colspan="4" class="empty">Gagal memuat data: ${error.message}</td></tr>`;
+      `<tr><td colspan="5" class="empty">Gagal memuat data: ${error.message}</td></tr>`;
     return;
   }
   semuaPasien = data;
@@ -102,15 +95,11 @@ document.getElementById('search').addEventListener('input', (e) => {
   renderTabel(semuaPasien.filter(p => p.nama.toLowerCase().includes(q)));
 });
 
-document.getElementById('btn-logout').addEventListener('click', async (e) => {
-  e.preventDefault();
-  await supabaseClient.auth.signOut();
-  window.location.href = 'login.html';
-});
-
 (async () => {
-  const ok = await cekLogin();
-  if (ok) muatPasien();
+  const ok = await wajibLogin();
+  if (!ok) return;
+  renderSidebar('pasien');
+  muatPasien();
 })();
 </script>
 

@@ -41,7 +41,7 @@
 <script>
 // Kalau sudah login, langsung arahkan ke dashboard
 supabaseClient.auth.getSession().then(({ data }) => {
-  if (data.session) window.location.href = 'dashboard.html';
+  if (data.session) window.location.href = 'beranda.html';
 });
 
 const form = document.getElementById('form-login');
@@ -68,7 +68,7 @@ form.addEventListener('submit', async (e) => {
     return;
   }
 
-  window.location.href = 'dashboard.html';
+  window.location.href = 'beranda.html';
 });
 </script>
 
