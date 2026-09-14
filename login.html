@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login Staf — Klinik Fisioterapi</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">Klinik Fisioterapi</div>
+  <nav>
+    <a href="index.html">Formulir Pasien</a>
+  </nav>
+</div>
+
+<div class="page">
+  <h1>Login Staf</h1>
+  <p class="lede">Khusus untuk petugas klinik. Masuk untuk melihat data pasien, riwayat tindakan, dan jadwal fisioterapi.</p>
+
+  <div class="card">
+    <form id="form-login">
+      <label for="email">Email</label>
+      <input type="email" id="email" required>
+
+      <label for="password">Kata Sandi</label>
+      <input type="password" id="password" required>
+
+      <div class="actions">
+        <button type="submit">Masuk</button>
+      </div>
+
+      <div id="notice"></div>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabase-config.js"></script>
+<script>
+// Kalau sudah login, langsung arahkan ke dashboard
+supabaseClient.auth.getSession().then(({ data }) => {
+  if (data.session) window.location.href = 'dashboard.html';
+});
+
+const form = document.getElementById('form-login');
+const notice = document.getElementById('notice');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  notice.innerHTML = '';
+
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+
+  const submitBtn = form.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Memeriksa...';
+
+  const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+  submitBtn.disabled = false;
+  submitBtn.textContent = 'Masuk';
+
+  if (error) {
+    notice.innerHTML = `<div class="notice err">Gagal masuk: ${error.message}</div>`;
+    return;
+  }
+
+  window.location.href = 'dashboard.html';
+});
+</script>
+
+</body>
+</html>

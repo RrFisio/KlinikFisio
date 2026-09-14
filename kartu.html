@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kartu Pasien — Klinik Fisioterapi</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">Klinik Fisioterapi</div>
+  <nav>
+    <a href="dashboard.html">Daftar Pasien</a>
+    <a href="#" id="btn-logout">Keluar</a>
+  </nav>
+</div>
+
+<div class="page wide">
+  <a href="dashboard.html" class="btn secondary" style="margin-bottom:20px;display:inline-block;">&larr; Kembali</a>
+
+  <div class="card" id="kartu-identitas">
+    <div class="patient-header">
+      <div>
+        <h1 id="p-nama">Memuat...</h1>
+        <span class="empty" id="p-nomor"></span>
+      </div>
+    </div>
+    <dl class="patient-meta">
+      <div><dt>Tanggal Lahir</dt><dd id="p-tgl-lahir">-</dd></div>
+      <div><dt>Alamat</dt><dd id="p-alamat">-</dd></div>
+      <div style="grid-column: 1 / -1;"><dt>Keluhan</dt><dd id="p-keluhan">-</dd></div>
+    </dl>
+  </div>
+
+  <br>
+
+  <div class="columns">
+
+    <!-- JADWAL FISIOTERAPI -->
+    <div class="card">
+      <h2>Jadwal Fisioterapi</h2>
+      <ul class="timeline" id="list-jadwal">
+        <li class="empty">Memuat...</li>
+      </ul>
+
+      <div class="small-form">
+        <strong>Tambah Jadwal</strong>
+        <form id="form-jadwal">
+          <label for="j-tanggal">Tanggal</label>
+          <input type="date" id="j-tanggal" required>
+          <label for="j-jam">Jam</label>
+          <input type="time" id="j-jam" required>
+          <label for="j-tindakan">Jenis Tindakan</label>
+          <input type="text" id="j-tindakan" placeholder="Contoh: terapi latihan lutut">
+          <div class="actions">
+            <button type="submit">Simpan Jadwal</button>
+          </div>
+          <div id="notice-jadwal"></div>
+        </form>
+      </div>
+    </div>
+
+    <!-- RIWAYAT TINDAKAN -->
+    <div class="card">
+      <h2>Riwayat Tindakan</h2>
+      <ul class="timeline" id="list-riwayat">
+        <li class="empty">Memuat...</li>
+      </ul>
+
+      <div class="small-form">
+        <strong>Catat Tindakan</strong>
+        <form id="form-riwayat">
+          <label for="r-tanggal">Tanggal</label>
+          <input type="date" id="r-tanggal" required>
+          <label for="r-tindakan">Tindakan</label>
+          <input type="text" id="r-tindakan" required placeholder="Contoh: mobilisasi sendi bahu">
+          <label for="r-terapis">Terapis</label>
+          <input type="text" id="r-terapis" placeholder="Nama terapis">
+          <label for="r-catatan">Catatan</label>
+          <textarea id="r-catatan" placeholder="Perkembangan, respons pasien, dsb."></textarea>
+          <div class="actions">
+            <button type="submit">Simpan Riwayat</button>
+          </div>
+          <div id="notice-riwayat"></div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabase-config.js"></script>
+<script>
+const params = new URLSearchParams(window.location.search);
+const pasienId = params.get('id');
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str ?? '';
+  return div.innerHTML;
+}
+
+function formatTanggal(iso) {
+  if (!iso) return '-';
+  const d = new Date(iso);
+  return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function formatJam(t) {
+  if (!t) return '';
+  return t.slice(0, 5);
+}
+
+async function cekLogin() {
+  const { data } = await supabaseClient.auth.getSession();
+  if (!data.session) {
+    window.location.href = 'login.html';
+    return false;
+  }
+  return true;
+}
+
+async function muatIdentitas() {
+  const { data, error } = await supabaseClient
+    .from('pasien')
+    .select('*')
+    .eq('id', pasienId)
+    .single();
+
+  if (error || !data) {
+    document.getElementById('p-nama').textContent = 'Pasien tidak ditemukan';
+    return;
+  }
+
+  document.getElementById('p-nama').textContent = data.nama;
+  document.getElementById('p-nomor').textContent = 'ID: ' + data.id.slice(0, 8).toUpperCase();
+  document.getElementById('p-tgl-lahir').textContent = formatTanggal(data.tanggal_lahir);
+  document.getElementById('p-alamat').textContent = data.alamat;
+  document.getElementById('p-keluhan').textContent = data.keluhan;
+}
+
+async function muatJadwal() {
+  const { data, error } = await supabaseClient
+    .from('jadwal_fisioterapi')
+    .select('*')
+    .eq('pasien_id', pasienId)
+    .order('tanggal', { ascending: true })
+    .order('jam', { ascending: true });
+
+  const el = document.getElementById('list-jadwal');
+  if (error) { el.innerHTML = `<li class="empty">Gagal memuat: ${error.message}</li>`; return; }
+  if (data.length === 0) { el.innerHTML = '<li class="empty">Belum ada jadwal.</li>'; return; }
+
+  el.innerHTML = data.map(j => `
+    <li>
+      <div class="t-date">${formatTanggal(j.tanggal)} · ${formatJam(j.jam)}</div>
+      <div class="t-title">${escapeHtml(j.jenis_tindakan || 'Sesi fisioterapi')}
+        <span class="status-pill ${j.status}">${escapeHtml(j.status)}</span>
+      </div>
+    </li>
+  `).join('');
+}
+
+async function muatRiwayat() {
+  const { data, error } = await supabaseClient
+    .from('riwayat_tindakan')
+    .select('*')
+    .eq('pasien_id', pasienId)
+    .order('tanggal', { ascending: false });
+
+  const el = document.getElementById('list-riwayat');
+  if (error) { el.innerHTML = `<li class="empty">Gagal memuat: ${error.message}</li>`; return; }
+  if (data.length === 0) { el.innerHTML = '<li class="empty">Belum ada riwayat tindakan.</li>'; return; }
+
+  el.innerHTML = data.map(r => `
+    <li>
+      <div class="t-date">${formatTanggal(r.tanggal)}${r.terapis ? ' · ' + escapeHtml(r.terapis) : ''}</div>
+      <div class="t-title">${escapeHtml(r.tindakan)}</div>
+      ${r.catatan ? `<div class="t-note">${escapeHtml(r.catatan)}</div>` : ''}
+    </li>
+  `).join('');
+}
+
+document.getElementById('form-jadwal').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const notice = document.getElementById('notice-jadwal');
+  notice.innerHTML = '';
+
+  const payload = {
+    pasien_id: pasienId,
+    tanggal: document.getElementById('j-tanggal').value,
+    jam: document.getElementById('j-jam').value,
+    jenis_tindakan: document.getElementById('j-tindakan').value.trim(),
+  };
+
+  const { error } = await supabaseClient.from('jadwal_fisioterapi').insert(payload);
+  if (error) {
+    notice.innerHTML = `<div class="notice err">${error.message}</div>`;
+    return;
+  }
+  e.target.reset();
+  notice.innerHTML = `<div class="notice ok">Jadwal ditambahkan.</div>`;
+  muatJadwal();
+});
+
+document.getElementById('form-riwayat').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const notice = document.getElementById('notice-riwayat');
+  notice.innerHTML = '';
+
+  const payload = {
+    pasien_id: pasienId,
+    tanggal: document.getElementById('r-tanggal').value,
+    tindakan: document.getElementById('r-tindakan').value.trim(),
+    terapis: document.getElementById('r-terapis').value.trim(),
+    catatan: document.getElementById('r-catatan').value.trim(),
+  };
+
+  const { error } = await supabaseClient.from('riwayat_tindakan').insert(payload);
+  if (error) {
+    notice.innerHTML = `<div class="notice err">${error.message}</div>`;
+    return;
+  }
+  e.target.reset();
+  notice.innerHTML = `<div class="notice ok">Riwayat tindakan dicatat.</div>`;
+  muatRiwayat();
+});
+
+document.getElementById('btn-logout').addEventListener('click', async (e) => {
+  e.preventDefault();
+  await supabaseClient.auth.signOut();
+  window.location.href = 'login.html';
+});
+
+(async () => {
+  if (!pasienId) {
+    document.getElementById('p-nama').textContent = 'ID pasien tidak ada di URL';
+    return;
+  }
+  const ok = await cekLogin();
+  if (!ok) return;
+  muatIdentitas();
+  muatJadwal();
+  muatRiwayat();
+})();
+</script>
+
+</body>
+</html>

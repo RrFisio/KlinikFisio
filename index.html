@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pendaftaran Pasien — Klinik Fisioterapi</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">Klinik Fisioterapi</div>
+  <nav>
+    <a href="login.html">Login Staf</a>
+  </nav>
+</div>
+
+<div class="page">
+  <h1>Formulir Pendaftaran Pasien</h1>
+  <p class="lede">Isi data di bawah ini untuk mendaftar sebagai pasien baru. Petugas klinik akan menghubungi kamu untuk mengatur jadwal fisioterapi.</p>
+
+  <div class="card">
+    <form id="form-pasien">
+      <label for="nama">Nama Pasien</label>
+      <input type="text" id="nama" required placeholder="Nama lengkap">
+
+      <label for="tanggal_lahir">Tanggal Lahir</label>
+      <input type="date" id="tanggal_lahir" required>
+
+      <label for="alamat">Alamat Pasien</label>
+      <textarea id="alamat" required placeholder="Alamat lengkap"></textarea>
+
+      <label for="keluhan">Keluhan</label>
+      <textarea id="keluhan" required placeholder="Contoh: nyeri punggung bawah sejak 2 minggu"></textarea>
+
+      <div class="actions">
+        <button type="submit">Daftarkan Pasien</button>
+      </div>
+
+      <div id="notice"></div>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabase-config.js"></script>
+<script>
+const form = document.getElementById('form-pasien');
+const notice = document.getElementById('notice');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  notice.innerHTML = '';
+
+  const payload = {
+    nama: document.getElementById('nama').value.trim(),
+    tanggal_lahir: document.getElementById('tanggal_lahir').value,
+    alamat: document.getElementById('alamat').value.trim(),
+    keluhan: document.getElementById('keluhan').value.trim(),
+  };
+
+  const submitBtn = form.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Menyimpan...';
+
+  const { error } = await supabaseClient.from('pasien').insert(payload);
+
+  submitBtn.disabled = false;
+  submitBtn.textContent = 'Daftarkan Pasien';
+
+  if (error) {
+    notice.innerHTML = `<div class="notice err">Pendaftaran gagal: ${error.message}</div>`;
+    return;
+  }
+
+  form.reset();
+  notice.innerHTML = `<div class="notice ok">Pendaftaran berhasil. Petugas klinik akan mengatur jadwal fisioterapi kamu.</div>`;
+});
+</script>
+
+</body>
+</html>
