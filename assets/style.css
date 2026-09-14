@@ -251,3 +251,125 @@ td a { text-decoration: none; font-weight: 500; }
   margin-top: 18px;
   padding-top: 18px;
 }
+
+/* ---------- Layout dengan sidebar (halaman staf) ---------- */
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  align-items: stretch;
+}
+
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: var(--primary-dark);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 18px;
+}
+
+.sidebar-brand {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: #fff;
+  margin-bottom: 30px;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.sidebar-nav a {
+  color: #CFE0D8;
+  text-decoration: none;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 0.92rem;
+}
+.sidebar-nav a:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.sidebar-nav a.active {
+  background: var(--accent);
+  color: #1B2420;
+  font-weight: 500;
+}
+
+.sidebar-logout {
+  color: #CFE0D8;
+  text-decoration: none;
+  font-size: 0.85rem;
+  padding: 10px 12px;
+  border-top: 1px solid rgba(255,255,255,0.15);
+  margin-top: 14px;
+}
+.sidebar-logout:hover { color: #fff; }
+
+.main-content {
+  flex: 1;
+  min-width: 0;
+  padding: 34px 40px 60px;
+}
+
+.content-wrap { max-width: 640px; }
+.content-wrap.wide { max-width: 1000px; }
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.summary-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+.summary-card .num {
+  font-family: 'Fraunces', serif;
+  font-size: 2rem;
+  color: var(--primary-dark);
+  line-height: 1;
+}
+.summary-card .label {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-top: 6px;
+}
+
+.filterbar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.filterbar input, .filterbar select { width: auto; }
+
+@media (max-width: 780px) {
+  .app-shell { flex-direction: column; }
+  .sidebar {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    padding: 12px 16px;
+    gap: 18px;
+    overflow-x: auto;
+  }
+  .sidebar-brand { margin-bottom: 0; white-space: nowrap; }
+  .sidebar-nav { flex-direction: row; flex: none; }
+  .sidebar-nav a { white-space: nowrap; }
+  .sidebar-logout {
+    margin-top: 0;
+    border-top: none;
+    margin-left: auto;
+    white-space: nowrap;
+    padding: 8px 10px;
+  }
+  .main-content { padding: 24px 16px 50px; }
+}
