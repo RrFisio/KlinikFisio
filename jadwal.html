@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jadwal Fisioterapi — Klinik Fisioterapi</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar-root"></aside>
+
+  <main class="main-content">
+    <div class="content-wrap wide">
+      <h1>Jadwal Fisioterapi</h1>
+      <p class="lede">Semua jadwal fisioterapi dari seluruh pasien. Klik nama pasien untuk membuka kartunya.</p>
+
+      <div class="filterbar">
+        <label style="margin:0;">Tanggal:</label>
+        <input type="date" id="filter-tanggal">
+        <button type="button" class="secondary" id="btn-semua">Tampilkan Semua</button>
+      </div>
+
+      <div class="card">
+        <table id="tabel-jadwal">
+          <thead>
+            <tr>
+              <th>Tanggal</th>
+              <th>Jam</th>
+              <th>Nama Pasien</th>
+              <th>Jenis Tindakan</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-jadwal">
+            <tr><td colspan="5" class="empty">Memuat data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabase-config.js"></script>
+<script src="assets/sidebar.js"></script>
+<script>
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str ?? '';
+  return div.innerHTML;
+}
+
+function formatTanggal(iso) {
+  if (!iso) return '-';
+  const d = new Date(iso);
+  return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function formatJam(t) {
+  if (!t) return '-';
+  return t.slice(0, 5);
+}
+
+async function muatJadwal(tanggal) {
+  const tbody = document.getElementById('tbody-jadwal');
+  tbody.innerHTML = '<tr><td colspan="5" class="empty">Memuat data...</td></tr>';
+
+  let query = supabaseClient
+    .from('jadwal_fisioterapi')
+    .select('*, pasien(id, nama)')
+    .order('tanggal', { ascending: true })
+    .order('jam', { ascending: true });
+
+  if (tanggal) query = query.eq('tanggal', tanggal);
+
+  const { data, error } = await query;
+
+  if (error) {
+    tbody.innerHTML = `<tr><td colspan="5" class="empty">Gagal memuat: ${error.message}</td></tr>`;
+    return;
+  }
+
+  if (data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">Tidak ada jadwal ditemukan.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = data.map(j => `
+    <tr>
+      <td>${formatTanggal(j.tanggal)}</td>
+      <td>${formatJam(j.jam)}</td>
+      <td><a href="kartu.html?id=${j.pasien?.id ?? ''}">${escapeHtml(j.pasien?.nama ?? 'Pasien tidak diketahui')}</a></td>
+      <td>${escapeHtml(j.jenis_tindakan || '-')}</td>
+      <td><span class="status-pill ${j.status}">${escapeHtml(j.status)}</span></td>
+    </tr>
+  `).join('');
+}
+
+document.getElementById('filter-tanggal').addEventListener('change', (e) => {
+  muatJadwal(e.target.value);
+});
+
+document.getElementById('btn-semua').addEventListener('click', () => {
+  document.getElementById('filter-tanggal').value = '';
+  muatJadwal(null);
+});
+
+(async () => {
+  const ok = await wajibLogin();
+  if (!ok) return;
+  renderSidebar('jadwal');
+  muatJadwal(null);
+})();
+</script>
+
+</body>
+</html>

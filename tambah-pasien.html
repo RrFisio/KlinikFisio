@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tambah Pasien — Klinik Fisioterapi</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar-root"></aside>
+
+  <main class="main-content">
+    <div class="content-wrap">
+      <h1>Tambah Pasien</h1>
+      <p class="lede">Gunakan ini untuk mendaftarkan pasien langsung dari klinik (misalnya pasien datang tanpa mengisi formulir online terlebih dulu).</p>
+
+      <div class="card">
+        <form id="form-pasien">
+          <label for="nama">Nama Pasien</label>
+          <input type="text" id="nama" required placeholder="Nama lengkap">
+
+          <label for="tanggal_lahir">Tanggal Lahir</label>
+          <input type="date" id="tanggal_lahir" required>
+
+          <label for="alamat">Alamat Pasien</label>
+          <textarea id="alamat" required placeholder="Alamat lengkap"></textarea>
+
+          <label for="nomor_hp">Nomor HP</label>
+          <input type="tel" id="nomor_hp" required placeholder="Contoh: 081234567890">
+
+          <label for="keluhan">Keluhan</label>
+          <textarea id="keluhan" required placeholder="Contoh: nyeri punggung bawah sejak 2 minggu"></textarea>
+
+          <div class="actions">
+            <button type="submit">Simpan Pasien</button>
+          </div>
+
+          <div id="notice"></div>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabase-config.js"></script>
+<script src="assets/sidebar.js"></script>
+<script>
+const form = document.getElementById('form-pasien');
+const notice = document.getElementById('notice');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  notice.innerHTML = '';
+
+  const payload = {
+    nama: document.getElementById('nama').value.trim(),
+    tanggal_lahir: document.getElementById('tanggal_lahir').value,
+    alamat: document.getElementById('alamat').value.trim(),
+    nomor_hp: document.getElementById('nomor_hp').value.trim(),
+    keluhan: document.getElementById('keluhan').value.trim(),
+  };
+
+  const submitBtn = form.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Menyimpan...';
+
+  const { data, error } = await supabaseClient.from('pasien').insert(payload).select().single();
+
+  submitBtn.disabled = false;
+  submitBtn.textContent = 'Simpan Pasien';
+
+  if (error) {
+    notice.innerHTML = `<div class="notice err">Gagal menyimpan: ${error.message}</div>`;
+    return;
+  }
+
+  notice.innerHTML = `<div class="notice ok">Pasien berhasil ditambahkan. Membuka kartu pasien...</div>`;
+  setTimeout(() => { window.location.href = 'kartu.html?id=' + data.id; }, 800);
+});
+
+(async () => {
+  const ok = await wajibLogin();
+  if (!ok) return;
+  renderSidebar('tambah');
+})();
+</script>
+
+</body>
+</html>

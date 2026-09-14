@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beranda — Klinik Fisioterapi</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar-root"></aside>
+
+  <main class="main-content">
+    <div class="content-wrap wide">
+      <h1>Beranda</h1>
+      <p class="lede">Ringkasan aktivitas klinik hari ini.</p>
+
+      <div class="summary-cards">
+        <div class="summary-card">
+          <div class="num" id="jumlah-pasien">–</div>
+          <div class="label">Total pasien terdaftar</div>
+        </div>
+        <div class="summary-card">
+          <div class="num" id="jumlah-jadwal-hari-ini">–</div>
+          <div class="label">Jadwal fisioterapi hari ini</div>
+        </div>
+        <div class="summary-card">
+          <div class="num" id="jumlah-pasien-baru">–</div>
+          <div class="label">Pasien baru minggu ini</div>
+        </div>
+      </div>
+
+      <h2>Jadwal Hari Ini</h2>
+      <div class="card">
+        <table id="tabel-jadwal-hari-ini">
+          <thead>
+            <tr>
+              <th>Jam</th>
+              <th>Nama Pasien</th>
+              <th>Jenis Tindakan</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-jadwal-hari-ini">
+            <tr><td colspan="4" class="empty">Memuat data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabase-config.js"></script>
+<script src="assets/sidebar.js"></script>
+<script>
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str ?? '';
+  return div.innerHTML;
+}
+
+function tanggalHariIni() {
+  const d = new Date();
+  return d.toISOString().slice(0, 10); // format YYYY-MM-DD sesuai kolom 'date'
+}
+
+function formatJam(t) {
+  if (!t) return '-';
+  return t.slice(0, 5);
+}
+
+async function muatRingkasan() {
+  const [{ count: totalPasien }, { count: pasienBaru }] = await Promise.all([
+    supabaseClient.from('pasien').select('*', { count: 'exact', head: true }),
+    supabaseClient.from('pasien').select('*', { count: 'exact', head: true })
+      .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()),
+  ]);
+
+  document.getElementById('jumlah-pasien').textContent = totalPasien ?? 0;
+  document.getElementById('jumlah-pasien-baru').textContent = pasienBaru ?? 0;
+}
+
+async function muatJadwalHariIni() {
+  const hariIni = tanggalHariIni();
+
+  const { data, error } = await supabaseClient
+    .from('jadwal_fisioterapi')
+    .select('*, pasien(id, nama)')
+    .eq('tanggal', hariIni)
+    .order('jam', { ascending: true });
+
+  const tbody = document.getElementById('tbody-jadwal-hari-ini');
+
+  if (error) {
+    tbody.innerHTML = `<tr><td colspan="4" class="empty">Gagal memuat: ${error.message}</td></tr>`;
+    document.getElementById('jumlah-jadwal-hari-ini').textContent = '0';
+    return;
+  }
+
+  document.getElementById('jumlah-jadwal-hari-ini').textContent = data.length;
+
+  if (data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" class="empty">Tidak ada jadwal fisioterapi hari ini.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = data.map(j => `
+    <tr>
+      <td>${formatJam(j.jam)}</td>
+      <td><a href="kartu.html?id=${j.pasien?.id ?? ''}">${escapeHtml(j.pasien?.nama ?? 'Pasien tidak diketahui')}</a></td>
+      <td>${escapeHtml(j.jenis_tindakan || '-')}</td>
+      <td><span class="status-pill ${j.status}">${escapeHtml(j.status)}</span></td>
+    </tr>
+  `).join('');
+}
+
+(async () => {
+  const ok = await wajibLogin();
+  if (!ok) return;
+  renderSidebar('beranda');
+  muatRingkasan();
+  muatJadwalHariIni();
+})();
+</script>
+
+</body>
+</html>
